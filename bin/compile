@@ -1,32 +1,83 @@
 #!/bin/bash
+# DOC: https://devcenter.heroku.com/articles/buildpack-api
+# bin/compile BUILD_DIR CACHE_DIR ENV_DIR
 
-mkdir -p "$1" "$2" "$3"
-BUILD_PATH=$(cd "$1" && pwd)
-CACHE_PATH=$(cd "$2" && pwd)
-BUILDPACK_PREFIX=nmap
 
-NMAP_VERSION="7.70"
-if [ -f "$3"/NMAP_VERSION ]; then
-  NMAP_VERSION="$(cat "$3"/NMAP_VERSION)"
+if [ -n $DYNO ];
+then 
+  PLATFORM="HEROKU"
+else 
+  PLATFORM="DOCKER"
 fi
-NMAP_NAME=nmap-$NMAP_VERSION
-echo "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME"/bin/nmap
 
-if [ ! -f "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME"/bin/nmap ]; then
-  echo "-----> Installing $NMAP_NAME"
-  curl -s -O https://nmap.org/dist/"$NMAP_NAME".tar.bz2
-  bzip2 -cd "$NMAP_NAME".tar.bz2 | tar xf -
-  cd "$NMAP_NAME"
-  ./configure --prefix="$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME"
+WDIR=$(pwd)
+OPENSSLVERSION="1.0.0"
+OPENSSLREVISION="s"
+NMAP_VERSION="7.92"
+OPENSSL_NAME="openssl-${OPENSSLVERSION}${OPENSSLREVISION}"
+NMAP_NAME=nmap-$NMAP_VERSION
+
+if [ $PLATFORM == "HEROKU" ]
+then
+
+  mkdir -p "$1" "$2" "$3"
+  BUILD_PATH=$(cd "$1" && pwd)
+  CACHE_PATH=$(cd "$2" && pwd)
+  BUILDPACK_PREFIX=nmap
+  
+  echo "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME"/bin/nmap
+
+  if [ ! -f "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME"/bin/nmap ]; then
+    echo "-----> Installing $OPENSSL_NAME"
+    
+    curl -s -O https://www.openssl.org/source/old/${OPENSSLVERSION}/${OPENSSL_NAME}.tar.gz
+    tar zxvf ${OPENSSL_NAME}.tar.gz
+    cd ${OPENSSL_NAME}
+    ./config --prefix="$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$OPENSSL_NAME" -fpic
+    make
+    make install
+    cd $WDIR
+
+    echo "-----> Installing $NMAP_NAME"
+    curl -s -O https://nmap.org/dist/"$NMAP_NAME".tar.bz2
+    tar -jxvf "$NMAP_NAME".tar.bz2
+    cd "$NMAP_NAME"
+    ./configure --prefix="$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME" --with-openssl="$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$OPENSSL_NAME" --without-ndiff --without-zenmap --without-nping
+    make
+    make install
+
+    
+  else
+    echo "-----> Using cached nmap version"
+  fi
+  mkdir -p /usr/share/nmap
+  cp -Rf "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME"/* /usr/share/nmap/
+  
+  mkdir -p "$BUILD_PATH"/"$BUILDPACK_PREFIX"/bin
+  cp "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME"/bin/* "$BUILD_PATH"/"$BUILDPACK_PREFIX"/bin
+  #export PATH=/app/nmap/bin
+  cp "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME"/bin/* "$BUILD_PATH"/bin
+
+fi
+
+if [ $PLATFORM == "DOCKER" ]
+then
+  curl -s -O https://www.openssl.org/source/old/${OPENSSLVERSION}/${OPENSSL_NAME}.tar.gz
+  tar zxvf ${OPENSSL_NAME}.tar.gz
+  cd ${OPENSSL_NAME}
+  ./config --prefix=/usr/local/openssl -fpic
   make
   make install
-else
-  echo "-----> Using cached nmap version"
+  cd ..
+
+  curl -s -O https://nmap.org/dist/"$NMAP_NAME".tar.bz2
+  tar -jxvf "$NMAP_NAME".tar.bz2
+  cd "$NMAP_NAME"
+  ./configure --with-openssl=/usr/local/openssl --without-ndiff --without-zenmap --without-nping
+  make 
+  make install
+
+  ECHO "SET NMAPDIR=/nmap/nse_main.lua"
 fi
 
-mkdir -p "$BUILD_PATH"/"$BUILDPACK_PREFIX"/bin
-cp "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME"/bin/* "$BUILD_PATH"/"$BUILDPACK_PREFIX"/bin
-#export PATH=/app/nmap/bin
-
-cp "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME"/bin/* "$BUILD_PATH"/bin
 
