@@ -5,7 +5,7 @@ BUILD_PATH=$(cd "$1" && pwd)
 CACHE_PATH=$(cd "$2" && pwd)
 BUILDPACK_PREFIX=nmap
 
-NMAP_VERSION="7.70"
+NMAP_VERSION="7.92"
 if [ -f "$3"/NMAP_VERSION ]; then
   NMAP_VERSION="$(cat "$3"/NMAP_VERSION)"
 fi
@@ -17,7 +17,7 @@ if [ ! -f "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME"/bin/nmap ]; then
   curl -s -O https://nmap.org/dist/"$NMAP_NAME".tar.bz2
   bzip2 -cd "$NMAP_NAME".tar.bz2 | tar xf -
   cd "$NMAP_NAME"
-  ./configure --prefix="$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME"
+  CFLAGS=-static ./configure --prefix="$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME"
   make
   make install
 else
