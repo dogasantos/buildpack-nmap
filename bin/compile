@@ -26,7 +26,10 @@ then
   BUILDPACK_PREFIX=nmap
   
   echo "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME"/bin/nmap
-
+  echo "FUCK OFF THE CACHED VERSION!"
+  rm -rf "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$OPENSSL_NAME"
+  rm -rf "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME"
+  
   if [ ! -f "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME"/bin/nmap ]; then
     echo "-----> Installing $OPENSSL_NAME"
     
