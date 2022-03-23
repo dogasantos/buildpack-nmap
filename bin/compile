@@ -24,6 +24,11 @@ then
   BUILD_PATH=$(cd "$1" && pwd)
   CACHE_PATH=$(cd "$2" && pwd)
   BUILDPACK_PREFIX=nmap
+
+  echo "-----> BUILD_PATH: $BUILD_PATH"
+  echo "-----> CACHE_PATH: $CACHE_PATH"
+  echo "-----> BUILDPACK_PREFIX: $BUILDPACK_PREFIX"
+
   
   rm -rf "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME" "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$OPENSSL_NAME"
 
