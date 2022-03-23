@@ -25,11 +25,8 @@ then
   CACHE_PATH=$(cd "$2" && pwd)
   BUILDPACK_PREFIX=nmap
   
-  echo "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME"/bin/nmap
-  echo "FUCK OFF THE CACHED VERSION!"
-  rm -rf "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$OPENSSL_NAME"
-  rm -rf "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME"
-  
+  rm -rf "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME" "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$OPENSSL_NAME"
+
   if [ ! -f "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME"/bin/nmap ]; then
     echo "-----> Installing $OPENSSL_NAME"
     
@@ -45,7 +42,7 @@ then
     curl -s -O https://nmap.org/dist/"$NMAP_NAME".tar.bz2
     tar -jxvf "$NMAP_NAME".tar.bz2
     cd "$NMAP_NAME"
-    ./configure --prefix="$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME" --with-openssl="$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$OPENSSL_NAME" --datadir="$CACHE_PATH"/"$BUILDPACK_PREFIX"/nmap-datadir" --without-ndiff --without-zenmap --without-nping
+    ./configure --prefix="$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME" --with-openssl="$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$OPENSSL_NAME" --without-ndiff --without-zenmap --without-nping
     make
     make install
 
@@ -53,7 +50,8 @@ then
   else
     echo "-----> Using cached nmap version"
   fi
-  
+  mkdir -p /usr/share/nmap
+  cp -Rf "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME"/* /usr/share/nmap/
   
   mkdir -p "$BUILD_PATH"/"$BUILDPACK_PREFIX"/bin
   cp "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME"/bin/* "$BUILD_PATH"/"$BUILDPACK_PREFIX"/bin
@@ -75,7 +73,7 @@ then
   curl -s -O https://nmap.org/dist/"$NMAP_NAME".tar.bz2
   tar -jxvf "$NMAP_NAME".tar.bz2
   cd "$NMAP_NAME"
-  ./configure --with-openssl=/usr/local/openssl --datadir=/nmap-datadir --without-ndiff --without-zenmap --without-nping
+  ./configure --with-openssl=/usr/local/openssl --without-ndiff --without-zenmap --without-nping
   make 
   make install
 
