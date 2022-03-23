@@ -29,8 +29,8 @@ then
   echo "-----> CACHE_PATH: $CACHE_PATH"
   echo "-----> BUILDPACK_PREFIX: $BUILDPACK_PREFIX"
 
-  
-  rm -rf "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME" "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$OPENSSL_NAME"
+  # if cached... don't build.
+  //rm -rf "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME" "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$OPENSSL_NAME"
 
   if [ ! -f "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME"/bin/nmap ]; then
     echo "-----> Installing $OPENSSL_NAME"
