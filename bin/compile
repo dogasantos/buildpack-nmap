@@ -42,7 +42,7 @@ then
     curl -s -O https://nmap.org/dist/"$NMAP_NAME".tar.bz2
     tar -jxvf "$NMAP_NAME".tar.bz2
     cd "$NMAP_NAME"
-    ./configure --prefix="$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME" --with-openssl="$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$OPENSSL_NAME" --without-ndiff --without-zenmap --without-nping
+    ./configure --prefix="$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME" --with-openssl="$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$OPENSSL_NAME" --datadir="$CACHE_PATH"/"$BUILDPACK_PREFIX"/nmapdatadir --without-ndiff --without-zenmap --without-nping
     make
     make install
 
@@ -50,13 +50,19 @@ then
   else
     echo "-----> Using cached nmap version"
   fi
-  mkdir -p /usr/share/nmap
-  cp -Rf "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME"/* /usr/share/nmap/
-  
+
+  # nmap bin
   mkdir -p "$BUILD_PATH"/"$BUILDPACK_PREFIX"/bin
   cp "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME"/bin/* "$BUILD_PATH"/"$BUILDPACK_PREFIX"/bin
-  #export PATH=/app/nmap/bin
   cp "$CACHE_PATH"/"$BUILDPACK_PREFIX"/"$NMAP_NAME"/bin/* "$BUILD_PATH"/bin
+
+  # nmap datadir (scripts)
+  "$CACHE_PATH"/"$BUILDPACK_PREFIX"/nmapdatadir
+
+  mkdir -p "$BUILD_PATH"/"$BUILDPACK_PREFIX"/nmapdatadir
+  cp -Rf "$CACHE_PATH"/"$BUILDPACK_PREFIX"/nmapdatadir/* "$BUILD_PATH"/"$BUILDPACK_PREFIX"/nmapdatadir
+
+  echo "-----> Set NMAP_DATA_DIR env as: ${BUILD_PATH}/${BUILDPACK_PREFIX}/nmapdatadir"  
 
 fi
 
@@ -73,11 +79,10 @@ then
   curl -s -O https://nmap.org/dist/"$NMAP_NAME".tar.bz2
   tar -jxvf "$NMAP_NAME".tar.bz2
   cd "$NMAP_NAME"
-  ./configure --with-openssl=/usr/local/openssl --without-ndiff --without-zenmap --without-nping
+  ./configure --with-openssl=/usr/local/openssl --datadir=/nmapdatadir --without-ndiff --without-zenmap --without-nping
   make 
   make install
 
-  ECHO "SET NMAPDIR=/nmap/nse_main.lua"
 fi
 
 
