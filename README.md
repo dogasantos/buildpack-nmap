@@ -1,12 +1,24 @@
 # buildpack-nmap
-<a href="https://heroku.com/deploy?template=https://github.com/hahwul/buildpack-nmap">
+
+(forked from hahwul/buildpack-nmap)
+
+Updates:
+
+* new nmap version
+* build with old openssl that supports old algos (like sha256)
+* build with nmap datadir (NSE scripts support)
+
+Now you can just set the datadir as "/app/nmap/nmapdatadir/nmap" and the script engine will work.
+
+
+<a href="https://heroku.com/deploy?template=https://github.com/dogasantos/buildpack-nmap">
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
 </a><br>
 install nmap and set alias buildpack of heroku for me(add export ENV)
 
 ## Composed
 ```
-$ heroku create --buildpack  https://github.com/hahwul/buildpack-nmap.git
+$ heroku create --buildpack  https://github.com/dogasantos/buildpack-nmap.git
 $ git push heroku master
 ```
 ## setting config vars
